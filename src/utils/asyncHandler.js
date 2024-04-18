@@ -11,3 +11,18 @@ export default asyncHandler;
 // const asyncHandler = (func) => () => {}
 // const asyncHandler = (func) => async () => {}
 
+
+/*
+const asyncHandler = (fn) => {
+    async (req, res, next) => {
+        try {
+            await fn(eq, res, next)
+        } catch (error) {
+            res.status(err.code).json({
+                success: false,
+                message: err.message
+            })
+        }
+    }
+}
+*/
