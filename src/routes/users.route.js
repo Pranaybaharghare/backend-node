@@ -10,7 +10,7 @@ import {upload} from "../middlewares/multer.middleware.js";
         maxCount:1
       },
       {
-        name:"coverImage",
+        name:"coverimage",
         maxCount:1
       }
     ]),
