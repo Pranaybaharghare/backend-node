@@ -48,12 +48,12 @@ const userSchema = new Schema(
         timestamps:true
     }
 )
-userSchema.pre(("save",function (next){
-    if(!this.isModified("password")) return next();
+// userSchema.pre(("save",function (next){
+//     if(!this.isModified("password")) return next();
 
-    this.password = bcrypt.hash(this.password,10);
-    next();
-}))         //here we use normal function not arrow function because here we need reference
+//     this.password = bcrypt.hash(this.password,10);
+//     next();
+// }))         //here we use normal function not arrow function because here we need reference
 
 
 userSchema.method.checkPassword = async ()=>{
@@ -87,4 +87,4 @@ userSchema.methods.generateRefreshToken = ()=> {
         }
     )
 }
-export const user = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
