@@ -5,8 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import ApiResponse from "../utils/ApiResponse.js"
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { userName, fullName, email, password} = req.body;
-// console.log(req);
+    const { userName, fullName, email, password } = req.body;
+    // console.log(req);
 
     if ([userName, fullName, email, password].some((field) => {
         field.trim() === ""
@@ -21,20 +21,28 @@ const registerUser = asyncHandler(async (req, res) => {
     if (existedUser) {
         throw new ApiError(401, "user existed");
     }
-    const avatarLocalPath = req.files?.['avatar'][0].path;
-    const coverLocalPath = req.files?.['cover'][0].path;
-   
-  
+    let avatarLocalPath;
+    let coverLocalPath;
+    if (req.files && Array.isArray(req.files.avatar) ) {
+        avatarLocalPath = req.files.avatar[0].path;
+
+    }
+    if (req.files && Array.isArray(req.files.cover)) {
+        coverLocalPath = req.files.cover[0].path;
+
+    }
+
+
     console.log("Cover Local Path:", coverLocalPath);
     console.log("Avatar Local Path:", avatarLocalPath);
-  
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "avatar is not uploaded on server");
-  }
 
-  if (!coverLocalPath) {
-    throw new ApiError(400,"coverImage was not uploaded"); 
-  }
+    if (!avatarLocalPath) {
+        throw new ApiError(400, "avatar is not uploaded on server");
+    }
+
+    if (!coverLocalPath) {
+        throw new ApiError(400, "coverImage was not uploaded");
+    }
 
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -55,7 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         password,
         cover: coverImage.url || "",
-        avatar:avatar?.url || ""
+        avatar: avatar?.url || ""
     })
 
     const createdUser = await User.findById(user._id).select(
