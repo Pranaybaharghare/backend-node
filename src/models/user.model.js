@@ -6,48 +6,46 @@ const userSchema = new Schema(
         userName: {
             type: String,
             required: true,
-            unique:true,
-            lowercase:true,
-            trim:true,
-            index:true
+            unique: true,
+            lowercase: true,
+            trim: true,
+            index: true
         },
         email: {
             type: String,
             required: true,
-            unique:true,
-            lowercase:true,
-            trim:true,
+            unique: true,
+            lowercase: true,
+            trim: true,
         },
         fullName: {
             type: String,
             required: true,
-            lowercase:true,
-            trim:true,
-            index:true
+            lowercase: true,
+            trim: true,
+            index: true
         },
         avatar: {
             type: String,
-            required: true,
-            unique:true,
+            unique: true,
         },
-        coverimage: {
-            type: String,
-            required: true
+        cover: {
+            type: String
         },
         watchHistory: {
             type: Schema.Types.ObjectId,
-            ref:"Video",
+            ref: "Video",
         },
         password: {
             type: String,
-            required: [true,'password is required'],
+            required: [true, 'password is required'],
         },
-        refreshToken:{
-            type:String
+        refreshToken: {
+            type: String
         }
-    },{
-        timestamps:true
-    }
+    }, {
+    timestamps: true
+}
 )
 // userSchema.pre(("save",function (next){
 //     if(!this.isModified("password")) return next();
@@ -57,34 +55,34 @@ const userSchema = new Schema(
 // }))         //here we use normal function not arrow function because here we need reference
 
 
-userSchema.method.checkPassword = async ()=>{
-   return await bcrypt.compare(password,this.password);
+userSchema.method.checkPassword = async () => {
+    return await bcrypt.compare(password, this.password);
 }
 
 
-userSchema.methods.generateAccessToken = ()=> {
+userSchema.methods.generateAccessToken = () => {
     return jsonwebtoken.sign(
         {
-            _id:this._id,
-            email:this.email,
-            username:this.username,
-            fullName:this.username
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+            fullName: this.username
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
             expiresin: process.env.ACCESS_TOKEN_EXPIRY
         }
-     )
+    )
 }
 
-userSchema.methods.generateRefreshToken = ()=> {
+userSchema.methods.generateRefreshToken = () => {
     jsonwebtoken.sign(
         {
-            _id:this._id,
+            _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresin:process.env.REFRESH_TOKEN_EXPIRY
+            expiresin: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
