@@ -20,7 +20,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         fs.unlinkSync(localFilePath)
         return response;
     } catch (error) {
-        fs.unlinkSync(localFilePath); //remove locally saved temp file from the server if it failed to upload on cloudinary
+        fs.unlinkSync(localFilePath); //remove locally saved temp file from the server if it failed to upload on cloudinary  
         console.error("Error uploading to Cloudinary. API Key:", error);
         throw new ApiError(400, "Failed to upload on Cloudinary");
         
