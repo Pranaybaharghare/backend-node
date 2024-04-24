@@ -47,12 +47,12 @@ const userSchema = new Schema(
     timestamps: true
 }
 )
-// userSchema.pre(("save",function (next){
-//     if(!this.isModified("password")) return next();
+userSchema.pre("save", async function (next) {
+    if(!this.isModified("password")) return next();
 
-//     this.password = bcrypt.hash(this.password,10);
-//     next();
-// }))         //here we use normal function not arrow function because here we need reference
+    this.password = await bcrypt.hash(this.password, 10)
+    next()
+})     //here we use normal function not arrow function because here we need reference
 
 
 userSchema.methods.checkPassword = async (password) => {

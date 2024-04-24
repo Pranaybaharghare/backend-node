@@ -100,6 +100,7 @@ console.log(password);
     const existedUser = await User.findOne({
         $or: [{ email }]
     })
+    console.log(existedUser);
 
     if (!existedUser) {
         throw new ApiError(400, "user not found");
