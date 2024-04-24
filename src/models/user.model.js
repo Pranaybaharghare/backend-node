@@ -55,7 +55,7 @@ const userSchema = new Schema(
 // }))         //here we use normal function not arrow function because here we need reference
 
 
-userSchema.method.checkPassword = async () => {
+userSchema.methods.checkPassword = async (password) => {
     return await bcrypt.compare(password, this.password);
 }
 
