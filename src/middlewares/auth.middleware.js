@@ -9,7 +9,7 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
             throw new ApiError(400, "token not found in cookies")
         }
         const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const user = User.findById(decodedToken?._id).select("-password -refreshToken");
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
         if (!user) {
             throw new ApiError(400, "invalid token");
         }

@@ -170,7 +170,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         if (incomingRefreshToken !== user.refreshToken) {
             throw new ApiError(400, "refresh token expired")
         }
-    
+
         const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id);
         const options = {
             httpOnly: true,
@@ -182,8 +182,32 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .cookie("refreshToken", refreshToken, options)
             .json(new ApiResponse(200, user, "accessToken update successfully"))
     } catch (error) {
-        throw new ApiError(400,"invalid refreshToken")
+        throw new ApiError(400, "invalid refreshToken")
     }
 })
 
-export { registerUser, loginUser, logout,refreshAccessToken };
+const updatePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+        throw new ApiError(400, "user not logged in");
+    }
+    const result = await user.checkPassword(currentPassword);
+    if (!result) {
+        throw new ApiError(400, "current password is not matched")
+    }
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false })
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, 'password updated successfully'))
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json(new ApiResponse(200, req.user, "current user"))
+})
+
+export { registerUser, loginUser, logout, refreshAccessToken, updatePassword, getCurrentUser };
