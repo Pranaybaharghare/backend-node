@@ -77,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const generateAccessTokenAndRefreshToken = async function (userId) {
     try {
-        const user =await User.findById(userId);
+        const user = await User.findById(userId);
         if (!user) {
             throw new ApiError(400, "user not found for generating access and refresh token");
         }
@@ -87,7 +87,7 @@ const generateAccessTokenAndRefreshToken = async function (userId) {
         await user.save({ validateBeforeSave: false });
         return ({ accessToken, refreshToken });
     } catch (error) {
-        console.log("error at generateAccessTokenAndRefreshToken",error);
+        console.log("error at generateAccessTokenAndRefreshToken", error);
         throw new ApiError(500, "Something went wrong while generating referesh and access token");
     }
 
@@ -129,7 +129,28 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie("refreshToken", refreshToken, options)
         .json(new ApiResponse(200, {
             user: userResponse, accessToken, refreshToken
-        }, "login successfull"))
+        }, "login successful"))
 })
 
-export { registerUser, loginUser };
+const logout = asyncHandler(async (req, res) => {
+    User.findByIdAndUpdate(req.user?._id, {
+        $unset: {
+            refreshToken: 1
+        }
+    }, {
+        new: true
+    })
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "logout successful"))
+})
+
+export { registerUser, loginUser, logout };
