@@ -51,16 +51,16 @@ userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10)
-    next()
+    next();
 })     //here we use normal function not arrow function because here we need reference
 
 
-userSchema.methods.checkPassword = async (password) => {
+userSchema.methods.checkPassword = async function(password) {
     return await bcrypt.compare(password, this.password);
 }
 
 
-userSchema.methods.generateAccessToken = () => {
+userSchema.methods.generateAccessToken = function() {
     return jsonwebtoken.sign(
         {
             _id: this._id,
@@ -70,19 +70,19 @@ userSchema.methods.generateAccessToken = () => {
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresin: process.env.ACCESS_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 }
 
-userSchema.methods.generateRefreshToken = () => {
-    jsonwebtoken.sign(
+userSchema.methods.generateRefreshToken = function() {
+   return jsonwebtoken.sign(
         {
             _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresin: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
