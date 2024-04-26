@@ -22,8 +22,20 @@ const uploadOnCloudinary = async (localFilePath) => {
         fs.unlinkSync(localFilePath); //remove locally saved temp file from the server if it failed to upload on cloudinary  
         console.error("Error uploading to Cloudinary. API Key:", error);
         throw new ApiError(400, "Failed to upload on Cloudinary");
-        
+
     }
 
 }
-export {uploadOnCloudinary} ;
+
+const deleteFromCloudinary = async (imageUrl) => {
+    try {
+        if (!imageUrl) return null;
+        const publicId = imageUrl.split('/').pop().split('.')[0];
+        const response = await cloudinary.uploader.destroy(publicId);
+        console.log(`Image ${publicId} deleted from Cloudinary`);
+        return response;
+    } catch (error) {
+
+    }
+}
+export { uploadOnCloudinary, deleteFromCloudinary };

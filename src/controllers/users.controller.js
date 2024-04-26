@@ -1,7 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js"
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 const registerUser = asyncHandler(async (req, res) => {
@@ -246,13 +246,16 @@ const updateAvatarOrCoverImage = asyncHandler(async (req, res) => {
     let coverImage = {};
     if (avatarLocalPath !== undefined) {
         avatar = await uploadOnCloudinary(avatarLocalPath);
+        await deleteFromCloudinary(req.user?.avatar);
+
     }
     if (coverLocalPath !== undefined) {
         coverImage = await uploadOnCloudinary(coverLocalPath);
+        await deleteFromCloudinary(req.user?.cover);
 
     }
     if (!avatar && !coverImage) {
-        throw new ApiError(400, "avatar or cover image not upload on cloudinary")
+        throw new ApiError(400, "avatar or cover image not upload on cloudinary");
     }
 
     const updatedUser = await User.findByIdAndUpdate(req.user._id, {
@@ -262,11 +265,11 @@ const updateAvatarOrCoverImage = asyncHandler(async (req, res) => {
         }
     }, {
         new: true
-    })
+    }).select("-password")
 
     return res
         .status(200)
-        .json(new ApiResponse(200, updatedUser, "cover image or avatar iis updated successfully"))
+        .json(new ApiResponse(200, updatedUser, "cover image or avatar is updated successfully"))
 
 })
 
