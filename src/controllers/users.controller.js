@@ -210,4 +210,25 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, req.user, "current user"))
 })
 
-export { registerUser, loginUser, logout, refreshAccessToken, updatePassword, getCurrentUser };
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { email, fullName, userName } = req.body;
+    if (!email && !fullName && !userName) {
+        throw new ApiError(400, "email or password or username is not defined");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id,{
+        $set:{
+            fullName:fullName,
+            email:email,
+            userName:userName
+        }
+    },{
+        new:true
+    })
+    return res
+    .status(200)
+    .json(new ApiResponse(200,updatedUser,"account details updated successfully"));
+
+})
+
+export { registerUser, loginUser, logout, refreshAccessToken, updatePassword, getCurrentUser, updateAccountDetails };
