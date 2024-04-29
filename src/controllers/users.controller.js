@@ -307,65 +307,68 @@ const updateAvatarOrCoverImage = asyncHandler(async (req, res) => {
     );
 });
 
-const getUserProfileChannel = asyncHandler(async (req, res) => {
+const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { userName } = req.params;
   if (!userName?.trim()) {
     throw new ApiError(400, "username not found");
   }
 
+
+
   const channel = await User.aggregate([
     {
       $match: {
-        userName: userName?.toLowerCase(),
-      },
+        userName: userName
+      }
     },
     {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
         foreignField: "channel",
-        as: "subscribers",
-      },
+        as: "subscribers"
+      }
     },
     {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
         foreignField: "subscriber",
-        as: "subscribedTo",
-      },
+        as: "subscribedTo"
+      }
     },
     {
       $addFields: {
-        subscriberCount: {
-          $size: "$subscribers",
+        subscribersCount: {
+          $size: "$subscribers"
         },
-
         subscribedToCount: {
-          $size: "$subscribedTo",
+          $size: "$subscribedTo"
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user._id, "$subscribers.subscriber"] },
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
             then: true,
-            else: false,
-          },
-        },
-      },
+            else: false
+
+          }
+        }
+      }
     },
     {
       $project: {
         fullName: 1,
-        username: 1,
-        subscribersCount: 1,
-        channelsSubscribedToCount: 1,
-        isSubscribed: 1,
+        cover: 1,
         avatar: 1,
-        coverImage: 1,
-        email: 1,
-      },
-    },
-  ]);
+        subscribedToCount: 1,
+        subscribersCount: 1,
+        userName: 1,
+        isSubscribed: 1,
+        email: 1
+      }
+    }
+  ])
+
   if (!channel?.length) {
     throw new ApiError(404, "channel does not exists");
   }
@@ -439,6 +442,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateAvatarOrCoverImage,
-  getUserProfileChannel,
+  getUserChannelProfile,
   getWatchHistory
 };
