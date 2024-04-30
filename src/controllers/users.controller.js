@@ -260,10 +260,10 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 const updateAvatarOrCoverImage = asyncHandler(async (req, res) => {
   let avatarLocalPath;
   let coverLocalPath;
-  if (req.files && Array.isArray(req.files.avatar)) {
+  if (req.files && Array.isArray(req.files?.avatar)) {
     avatarLocalPath = req.files.avatar[0].path;
   }
-  if (req.files && Array.isArray(req.files.cover)) {
+  if (req.files && Array.isArray(req.files?.cover)) {
     coverLocalPath = req.files.cover[0].path;
   }
   if (!avatarLocalPath && !coverLocalPath) {
