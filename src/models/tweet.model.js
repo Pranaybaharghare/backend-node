@@ -1,19 +1,15 @@
 import mongoose, { Schema } from "mongoose";
 
-const commentSchema = new Schema({
+const tweetSchema = new Schema({
     content: {
         type: String,
         required: true
-    },
-    video: {
-        type: Schema.Types.ObjectId,
-        ref: "Video"
     },
     owner: {
         type: Schema.Types.ObjectId,
         ref: "User"
     },
-    commentLike:{
+    tweetLike:{
         type:Number,
         default:0
     }
@@ -22,4 +18,4 @@ const commentSchema = new Schema({
     timestamps:true
 })
 
-export const Comment = mongoose.model("Comment",commentSchema)
+export const Tweet = mongoose.model("Tweet",tweetSchema);
