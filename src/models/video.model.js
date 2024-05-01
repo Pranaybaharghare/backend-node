@@ -20,7 +20,7 @@ const videoSchema = new Schema(
             ref: "User",
         },
         like: {
-            type: String,
+            type: Number,
             default: 0
         },
         description: {
