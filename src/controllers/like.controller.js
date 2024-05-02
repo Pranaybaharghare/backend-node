@@ -84,47 +84,149 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 });
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
-    const {tweetId} = req.params;
-    if(!tweetId){
-        throw new ApiError(404,"tweetId not found");
+    const { tweetId } = req.params;
+    if (!tweetId) {
+        throw new ApiError(404, "tweetId not found");
     }
 
     const tweet = await Tweet.findById(new mongoose.Types.ObjectId(tweetId));
-    if(!tweet){
-        throw new ApiError(400,"tweet not found ")
+    if (!tweet) {
+        throw new ApiError(400, "tweet not found ")
     }
 
-    const isAlreadyLiked = await Like.findOne({tweet:new mongoose.Types.ObjectId(tweetId),likedBy:new mongoose.Types.ObjectId(req.user._id)});
-    if(isAlreadyLiked){
+    const isAlreadyLiked = await Like.findOne({ tweet: new mongoose.Types.ObjectId(tweetId), likedBy: new mongoose.Types.ObjectId(req.user._id) });
+    if (isAlreadyLiked) {
         const deletedTweetLike = await Tweet.deleteOne(new mongoose.Types.ObjectId(isAlreadyLiked?._id));
         tweet.tweetLike -= 1;
-        await tweet.save({validateBeforeSave:false});
+        await tweet.save({ validateBeforeSave: false });
 
         return res
-        .status(200)
-        .json(new ApiResponse(200,deletedTweetLike,"remove like from tweet successfully"))
+            .status(200)
+            .json(new ApiResponse(200, deletedTweetLike, "remove like from tweet successfully"))
     }
 
 
     const likedTweet = await Like.create({
-        tweet:tweetId,
-        likedBy:req.user?._id
+        tweet: tweetId,
+        likedBy: req.user?._id
     })
 
-    if(!likedTweet){
-        throw new ApiError(400,"tweet is unable to like");
+    if (!likedTweet) {
+        throw new ApiError(400, "tweet is unable to like");
     }
 
     tweet.tweetLike += 1;
-    await tweet.save({validateBeforeSave:false});
+    await tweet.save({ validateBeforeSave: false });
 
     return res
-    .status(200)
-    .json(new ApiResponse(200,likedTweet,"tweet liked successfully"))
+        .status(200)
+        .json(new ApiResponse(200, likedTweet, "tweet liked successfully"))
 }
 );
+
+const getLikedVideos = asyncHandler(async (req, res) => {
+    const getLikedVideos = await Like.aggregate([
+        {
+            $match: {
+                video: {
+                    $exists: true,
+                },
+                likedBy: new mongoose.Types.ObjectId(req.user?._id),
+            },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "video",
+                foreignField: "_id",
+                as: "videoDetails",
+            },
+        },
+        {
+            $addFields: {
+                videoTitle: {
+                    $arrayElemAt: [
+                        "$videoDetails.title",
+                        0,
+                    ],
+                },
+                videoDescription: {
+                    $arrayElemAt: [
+                        "$videoDetails.description",
+                        0,
+                    ],
+                },
+                videoThumbnail: {
+                    $arrayElemAt: [
+                        "$videoDetails.thumbnail",
+                        0,
+                    ],
+                },
+                videoFile: {
+                    $arrayElemAt: [
+                        "$videoDetails.videoFile",
+                        0,
+                    ],
+                },
+                videoOwner: {
+                    $arrayElemAt: [
+                        "$videoDetails.owner",
+                        0,
+                    ],
+                },
+                videoDuration: {
+                    $arrayElemAt: [
+                        "$videoDetails.duration",
+                        0,
+                    ],
+                },
+                videoLike: {
+                    $arrayElemAt: [
+                        "$videoDetails.like", 
+                        0
+                    ],
+                },
+                videoIsPublished: {
+                    $arrayElemAt: [
+                        "$videoDetails.isPublished",
+                        0,
+                    ],
+                },
+                videoViews: {
+                    $arrayElemAt: [
+                        "$videoDetails.views",
+                        0,
+                    ],
+                },
+            },
+        },
+        {
+            $project: {
+                videoTitle: 1,
+                videoDescription: 1,
+                videoThumbnail: 1,
+                videoFile: 1,
+                videoOwner: 1,
+                videoDuration: 1,
+                videoLike: 1,
+                videoIsPublished: 1,
+                videoViews: 1,
+            },
+        },
+    ]);
+
+    if (!getLikedVideos) {
+        throw new ApiError(400, "unable to fetched liked videos by user");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, getLikedVideos, "fetched liked videos successfully"));
+})
+
 export {
     toggleVideoLike,
     toggleCommentLike,
-    toggleTweetLike
+    toggleTweetLike,
+    getLikedVideos
 }
