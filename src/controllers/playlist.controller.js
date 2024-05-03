@@ -113,14 +113,53 @@ const getPlaylistById = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  
-  if(!playlist){
-    throw new ApiError(400,"unable to fetched playlist");
+
+  if (!playlist) {
+    throw new ApiError(400, "unable to fetched playlist");
   }
 
   return res
-  .status(200)
-  .json(new ApiResponse(200,playlist,"fetched playlist successfully"));
+    .status(200)
+    .json(new ApiResponse(200, playlist, "fetched playlist successfully"));
 });
 
-export { createPlaylist, addVideoToPlaylist, getPlaylistById };
+const getUserPlaylists = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    throw new ApiError(404, "userId not found");
+  }
+
+  const userPlaylist = await Playlist.find({ owner: userId });
+  if (!userPlaylist) {
+    throw new ApiError(400, "user playlist not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userPlaylist, "fetched user playlist successfully"));
+});
+
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
+  if (!videoId) {
+    throw new ApiError(404, "videoId not found");
+  }
+  if (!playlistId) {
+    throw new ApiError(404, "playlistId not found");
+  }
+  const playlist = await Playlist.findById(playlistId);
+  const playlistOwner = new mongoose.Types.ObjectId(playlist?.owner);
+  let deletedPlaylist;
+  if (playlistOwner === req.user?._id) {
+    deletedPlaylist = await Playlist.deleteOne(playlist?._id);
+  }
+  if (!deletedPlaylist) {
+    throw new ApiError(400, "unable to delete playlist");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deletedPlaylist, "playlist deleted successfully"));
+})
+
+export { createPlaylist, addVideoToPlaylist, getPlaylistById, getUserPlaylists, removeVideoFromPlaylist };
